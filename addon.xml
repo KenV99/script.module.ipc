@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="script.module.ipc"
+       name="ipc"
+       version="0.0.1"
+       provider-name="KenV99">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+  </requires>
+  <extension point="xbmc.python.module"
+             library="lib" />
+  <extension point="xbmc.addon.metadata">
+    <summary>Pyro4</summary>
+    <description>Pyro4 packed for Kodi</description>
+    <platform>all</platform>
+    <language></language>
+    <license>GNU v2</license>
+    <forum></forum>
+    <website></website>
+    <source></source>
+    <email></email>
+  </extension>
+</addon>
