@@ -45,6 +45,7 @@ class IPCClient(object):
             pyro4.config.SERIALIZERS_ACCEPTED.add(datatype)
         pyro4.config.SERIALIZER = datatype
         pyro4.config.DETAILED_TRACEBACK = True
+        pyro4.config.COMMTIMEOUT = 5
 
     def get_exposed_object(self):
         """
