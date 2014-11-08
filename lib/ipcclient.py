@@ -25,7 +25,7 @@ import pyro4.util
 
 class IPCClient(object):
 
-    def __init__(self, name='kodi-IPC', host='localhost', port=9091, datatype='pickle'):
+    def __init__(self, name='kodi-IPC', host='localhost', port=9099, datatype='pickle'):
         """
         Initializes the client to use a named proxy for datacommunication with the server. The method 'get_data_object'
         should be invoked just before running a server based method and then destroyed promptly to prevent running out

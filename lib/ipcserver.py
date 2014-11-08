@@ -38,12 +38,12 @@ else:
 
 class IPCServer(threading.Thread):
 
-    def __init__(self, expose_obj, host='localhost', name='kodi-IPC', port=9091, serializer='pickle'):
+    def __init__(self, expose_obj, host='localhost', name='kodi-IPC', port=9099, serializer='pickle'):
         """
         Initializes all parameters needed to start the server using a specifically named server and port.
         (pyro4 allows for the use of a nameserver if desired. Details at: https://pythonhosted.org/Pyro4/index.html)
-        Inherits from threading so that an event loop can be used to exit gracefully when Kodi is shutting down by
-        calling the stop() method. Note that if you plan to run more than one server, you should specify 'name' and
+        Inherits from threading so that an EXTERNAL event loop can be used to exit gracefully when Kodi is shutting down
+        by calling the stop() method. Note that if you plan to run more than one server, you should specify 'name' and
         'port' to prevent conflicts and errors.
         :param expose_obj: This is the python object whose methods will be exposed to the clients
         :type expose_obj: object or classic class
@@ -100,7 +100,7 @@ class IPCServer(threading.Thread):
 
     def test_pickle(self, test_obj):
         """
-        Tests whether an object instance is pickleable (serializable for default server sharing protocol).
+        Tests whether an object or instance is pickleable (serializable for default server sharing protocol).
         :param test_obj: The object to be tested
         :type test_obj: object
         :return: True if pickleable, False if not
