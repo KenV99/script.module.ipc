@@ -78,13 +78,13 @@ class IPCServer(threading.Thread):
             daemon = pyro4.Daemon(host=self.host, port=self.port)
             daemon.register(self.expose_obj, self.name)
         except Exception as e:
-            logger("Error starting IPC Server")
+            logger("'*&*&*&*& ipcdatastore: Error starting IPC Server")
             if hasattr(e, 'message'):
                 logger(e.message)
         else:
             self.p4daemon = daemon
             self.running = True
-            logger("IPC Server Started: {0}".format(daemon.uriFor(self.name)))
+            logger("'*&*&*&*& ipcdatastore: IPC Server Started: {0}".format(daemon.uriFor(self.name)))
             daemon.requestLoop()
 
     def stop(self):
