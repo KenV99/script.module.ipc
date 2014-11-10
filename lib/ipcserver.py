@@ -28,8 +28,10 @@ import sys
 
 def printlog(msg):
     print msg
-
-isKodi = 'XBMC' in sys.executable
+if 'win' in sys.platform:
+    isKodi = 'XBMC' in sys.executable
+else:
+    isKodi = True
 if isKodi:
     import xbmc
     logger = xbmc.log
