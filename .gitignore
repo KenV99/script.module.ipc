@@ -52,5 +52,5 @@ docs/_build/
 # PyBuilder
 target/
 
-lib/ipcserver2.py
-lib/xbmcoutput.py
+lib/ipc/ipcserver2.py
+lib/ipc/xbmcoutput.py
