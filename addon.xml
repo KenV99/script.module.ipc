@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="script.module.ipc"
-       name="ipc"
+       name="IPC - InterProcess Comm Module based on Pyro 4"
        version="0.0.2"
        provider-name="KenV99">
   <requires>
-    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="xbmc.python" version="2.14.0"/>
   </requires>
   <extension point="xbmc.python.module"
              library="lib" />
   <extension point="xbmc.addon.metadata">
-    <summary>Pyro4</summary>
-    <description>Pyro4 packed for Kodi</description>
+    <summary lang="en">Pyro4</summary>
+    <description lang="en">Pyro4 packed for Kodi</description>
     <platform>all</platform>
     <language></language>
     <license>GNU v2</license>
