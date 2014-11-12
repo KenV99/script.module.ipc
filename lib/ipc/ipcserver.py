@@ -26,6 +26,7 @@ import pyro4.errors
 import threading
 import sys
 
+
 def printlog(msg):
     print msg
 if 'win' in sys.platform:
@@ -37,6 +38,7 @@ if isKodi:
     logger = xbmc.log
 else:
     logger = printlog
+
 
 class IPCServer(threading.Thread):
 
@@ -95,12 +97,13 @@ class IPCServer(threading.Thread):
         """
         try:
             self.p4daemon.shutdown()
-        except Exception as e:
+        except Exception:
             raise
         else:
             self.running = False
 
-    def test_pickle(self, test_obj):
+    @staticmethod
+    def test_pickle(test_obj):
         """
         Tests whether an object or instance is pickleable (serializable for default server sharing protocol).
         :param test_obj: The object to be tested
@@ -115,4 +118,3 @@ class IPCServer(threading.Thread):
             return False
         else:
             return True
-

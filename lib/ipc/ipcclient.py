@@ -3,7 +3,7 @@
 #
 # Copyright (C) 2014 KenV99
 #
-#    This program is free software: you can redistribute it and/or modify
+# This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation, either version 3 of the License, or
 #    (at your option) any later version.
@@ -23,8 +23,8 @@
 import pyro4
 import pyro4.util
 
-class IPCClient(object):
 
+class IPCClient(object):
     def __init__(self, name='kodi-IPC', host='localhost', port=9099, datatype='pickle'):
         """
         Initializes the client to use a named proxy for datacommunication with the server. The method 'get_data_object'
