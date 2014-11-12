@@ -41,25 +41,27 @@ else:
 
 
 class IPCServer(threading.Thread):
+    """
+    Initializes all parameters needed to start the server using a specifically named server and port.
+    (pyro4 allows for the use of a nameserver if desired. Details at: https://pythonhosted.org/Pyro4/index.html)
+    Inherits from threading so that an EXTERNAL event loop can be used to exit gracefully when Kodi is shutting down
+    by calling the stop() method. Note that if you plan to run more than one server, you should specify 'name' and
+    'port' to prevent conflicts and errors.
 
+    :param expose_obj: This is the python object whose methods will be exposed to the clients
+    :type expose_obj: object or classic class
+    :param host: The host that will be used for the server
+    :type host: str
+    :param name: The name used by the socket protocol for this datastore
+    :type name: str
+    :param port: The port for the socket used
+    :type port: int
+    :param serializer: The serialization protocol to be used. Options: pickle, serpent, marshall, json
+    :type serializer: str
+
+    """
     def __init__(self, expose_obj, host='localhost', name='kodi-IPC', port=9099, serializer='pickle'):
-        """
-        Initializes all parameters needed to start the server using a specifically named server and port.
-        (pyro4 allows for the use of a nameserver if desired. Details at: https://pythonhosted.org/Pyro4/index.html)
-        Inherits from threading so that an EXTERNAL event loop can be used to exit gracefully when Kodi is shutting down
-        by calling the stop() method. Note that if you plan to run more than one server, you should specify 'name' and
-        'port' to prevent conflicts and errors.
-        :param expose_obj: This is the python object whose methods will be exposed to the clients
-        :type expose_obj: object or classic class
-        :param host: The host that will be used for the server
-        :type host: str
-        :param name: The name used by the socket protocol for this datastore
-        :type name: str
-        :param port: The port for the socket used
-        :type port: int
-        :param serializer: The serialization protocol to be used. Options: pickle, serpent, marshall, json
-        :type serializer: str
-        """
+
         super(IPCServer, self).__init__()
         self.host = host
         self.name = name
@@ -106,10 +108,12 @@ class IPCServer(threading.Thread):
     def test_pickle(test_obj):
         """
         Tests whether an object or instance is pickleable (serializable for default server sharing protocol).
+
         :param test_obj: The object to be tested
         :type test_obj: object
         :return: True if pickleable, False if not
         :rtype: bool
+
         """
         import pickle
         try:
