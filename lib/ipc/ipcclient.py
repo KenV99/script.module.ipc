@@ -23,7 +23,6 @@
 import pyro4
 import pyro4.util
 
-
 class IPCClient(object):
     """
     Initializes the client to use a named proxy for datacommunication with the server. The method 'get_data_object'
