@@ -50,17 +50,17 @@ class IPCServer(threading.Thread):
 
     :param expose_obj: This is the python object whose methods will be exposed to the clients
     :type expose_obj: object or classic class
+    :param name: The arbitrary name used by the socket protocol for this datastore
+    :type name: str
     :param host: The host that will be used for the server
     :type host: str
-    :param name: The name used by the socket protocol for this datastore
-    :type name: str
     :param port: The port for the socket used
     :type port: int
     :param serializer: The serialization protocol to be used. Options: pickle, serpent, marshall, json
     :type serializer: str
 
     """
-    def __init__(self, expose_obj, host='localhost', name='kodi-IPC', port=9099, serializer='pickle'):
+    def __init__(self, expose_obj, name='kodi-IPC', host='localhost', port=9099, serializer='pickle'):
 
         super(IPCServer, self).__init__()
         self.host = host
@@ -107,7 +107,8 @@ class IPCServer(threading.Thread):
     @staticmethod
     def test_pickle(test_obj):
         """
-        Tests whether an object or instance is pickleable (serializable for default server sharing protocol).
+        A convenience function that tests whether an object or instance is pickleable (serializable for default server
+        sharing protocol).
 
         :param test_obj: The object to be tested
         :type test_obj: object
