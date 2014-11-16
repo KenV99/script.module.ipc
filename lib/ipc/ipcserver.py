@@ -107,7 +107,7 @@ class IPCServer(threading.Thread):
     @staticmethod
     def test_pickle(test_obj):
         """
-        A convenience function that tests whether an object or instance is pickleable (serializable for default server
+        A convenience function that tests whether an object or instance can be pickled (serializable for default server
         sharing protocol).
 
         :param test_obj: The object to be tested

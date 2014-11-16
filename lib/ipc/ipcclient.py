@@ -25,7 +25,7 @@ import pyro4.util
 
 class IPCClient(object):
     """
-    Initializes the client to use a named proxy for datacommunication with the server. The method 'get_data_object'
+    Initializes the client to use a named proxy for data communication with the server. The method 'get_data_object'
     should be invoked just before running a server based method and then destroyed promptly to prevent running out
     of data sockets on the server and preventing dropped connections. This can be done by dropping out of context
     and need not be done explicitly. See pyro4 docs at https://pythonhosted.org/Pyro4/index.html for details.
@@ -78,7 +78,8 @@ class IPCClient(object):
     @staticmethod
     def get_traceback():
         """
-        Useful for errors that occur within the logic of the shared object
+        Useful for exceptions that occur within the logic of the shared object. The normal system traceback will not be
+        informative for these types of errors.
 
         :return: A detailed traceback of the last error
         :rtype: str
