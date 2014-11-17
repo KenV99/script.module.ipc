@@ -29,12 +29,14 @@ import sys
 
 def printlog(msg):
     print msg
+
 if 'win' in sys.platform:
     isKodi = 'XBMC' in sys.executable
 else:
     isKodi = True
 if isKodi:
     import xbmc
+    import xbmcaddon
     logger = xbmc.log
 else:
     logger = printlog
@@ -50,6 +52,9 @@ class IPCServer(threading.Thread):
 
     :param expose_obj: This is the python object whose methods will be exposed to the clients
     :type expose_obj: object or classic class
+    :param add_on_id: The id of an addon which has stored server settings in its settings.xml file.
+                      This supercedes any explicit keyword assignments for name, host and port.
+    :type add_on_id: str
     :param name: The arbitrary name used by the socket protocol for this datastore
     :type name: str
     :param host: The host that will be used for the server
@@ -60,12 +65,24 @@ class IPCServer(threading.Thread):
     :type serializer: str
 
     """
-    def __init__(self, expose_obj, name='kodi-IPC', host='localhost', port=9099, serializer='pickle'):
+    def __init__(self, expose_obj, add_on_id='', name='kodi-IPC', host='localhost', port=9099, serializer='pickle'):
 
         super(IPCServer, self).__init__()
-        self.host = host
-        self.name = name
-        self.port = port
+        if add_on_id != '' and isKodi:
+            try:
+                settings = xbmcaddon.Addon(add_on_id).getSetting
+                self.name = settings('data_name')
+                self.host = settings('host')
+                self.port = int(settings('port'))
+            except:
+                self.host = host
+                self.name = name
+                self.port = port
+        else:
+            self.host = host
+            self.name = name
+            self.port = port
+        self.uri = 'PYRO:{0}@{1}:{2}'.format(name, host, port)
         self.serializer = serializer
         self.expose_obj = expose_obj
         self.p4daemon = None

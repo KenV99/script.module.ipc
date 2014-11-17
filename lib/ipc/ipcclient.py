@@ -20,8 +20,17 @@
 #   Under the "MIT Software License" which is OSI-certified, and GPL-compatible.
 #   See http://www.opensource.org/licenses/mit-license.php
 
+import sys
 import pyro4
 import pyro4.util
+
+if 'win' in sys.platform:
+    isKodi = 'XBMC' in sys.executable
+else:
+    isKodi = True
+if isKodi:
+    import xbmcaddon
+
 
 class IPCClient(object):
     """
@@ -29,7 +38,9 @@ class IPCClient(object):
     should be invoked just before running a server based method and then destroyed promptly to prevent running out
     of data sockets on the server and preventing dropped connections. This can be done by dropping out of context
     and need not be done explicitly. See pyro4 docs at https://pythonhosted.org/Pyro4/index.html for details.
-
+    :param add_on_id: The id of an addon which has stored server settings in its settings.xml file.
+                      This supercedes any explicit eyword assignments for name, host and port.
+    :type add_on_id: str
     :param name: Arbitrary name for the object being used, must match the name used by server
     :type name: str
     :param host: The resolvable name or IP address where the server is running
@@ -41,8 +52,21 @@ class IPCClient(object):
 
     """
 
-    def __init__(self, name='kodi-IPC', host='localhost', port=9099, datatype='pickle'):
-
+    def __init__(self, add_on_id='', name='kodi-IPC', host='localhost', port=9099, datatype='pickle'):
+        if add_on_id != '' and isKodi:
+            try:
+                settings = xbmcaddon.Addon(add_on_id).getSetting
+                self.name = settings('data_name')
+                self.host = settings('host')
+                self.port = int(settings('port'))
+            except:
+                self.host = host
+                self.name = name
+                self.port = port
+        else:
+            self.host = host
+            self.name = name
+            self.port = port
         self.uri = 'PYRO:{0}@{1}:{2}'.format(name, host, port)
         if (datatype in pyro4.config.SERIALIZERS_ACCEPTED) is False:
             pyro4.config.SERIALIZERS_ACCEPTED.add(datatype)
