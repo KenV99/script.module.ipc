@@ -31,7 +31,7 @@ def printlog(msg):
     print msg
 
 if 'win' in sys.platform:
-    isKodi = 'XBMC' in sys.executable
+    isKodi = 'xbmc' in sys.executable.lower() or 'kodi' in sys.executable.lower()
 else:
     isKodi = True
 if isKodi:
@@ -50,23 +50,25 @@ class IPCServer(threading.Thread):
     by calling the stop() method. Note that if you plan to run more than one server, you should specify 'name' and
     'port' to prevent conflicts and errors.
 
-    :param expose_obj: This is the python object whose methods will be exposed to the clients
-    :type expose_obj: object or classic class
-    :param add_on_id: The id of an addon which has stored server settings in its settings.xml file.
-                      This supercedes any explicit keyword assignments for name, host and port.
-    :type add_on_id: str
-    :param name: The arbitrary name used by the socket protocol for this datastore
-    :type name: str
-    :param host: The host that will be used for the server
-    :type host: str
-    :param port: The port for the socket used
-    :type port: int
-    :param serializer: The serialization protocol to be used. Options: pickle, serpent, marshall, json
-    :type serializer: str
-
     """
-    def __init__(self, expose_obj, add_on_id='', name='kodi-IPC', host='localhost', port=9099, serializer='pickle'):
 
+    def __init__(self, expose_obj, add_on_id='', name='kodi-IPC', host='localhost', port=9099, serializer='pickle'):
+        """
+        :param expose_obj: *Required*. This is the python object whose methods will be exposed to the clients
+        :type expose_obj: object or classic class
+        :param add_on_id: *Optional keyword*. The id of an addon which has stored server settings in its settings.xml file.
+                          This supercedes any explicit keyword assignments for name, host and port.
+        :type add_on_id: str
+        :param name: *Optional keyword*. The arbitrary name used by the socket protocol for this datastore.
+        :type name: str
+        :param host: *Optional keyword*. The host that will be used for the server.
+        :type host: str
+        :param port: *Optional keyword*. The port for the socket used.
+        :type port: int
+        :param serializer: *Optional keyword*. The serialization protocol to be used. Options: pickle, serpent, marshall, json
+        :type serializer: str
+
+        """
         super(IPCServer, self).__init__()
         if add_on_id != '' and isKodi:
             try:
@@ -91,7 +93,7 @@ class IPCServer(threading.Thread):
     def run(self):
         """
         Note that you must call .start() on the class instance to start the server in a separate thread.
-        Do not call this routine directly with .run() or it will run in the same thread as the caller and lock when it
+        Do not call run() directly with IPCServer.run() or it will run in the same thread as the caller and lock when it
         hits daemon.requestLoop().
         """
         if (self.serializer in pyro4.config.SERIALIZERS_ACCEPTED) is False:
@@ -127,7 +129,7 @@ class IPCServer(threading.Thread):
         A convenience function that tests whether an object or instance can be pickled (serializable for default server
         sharing protocol).
 
-        :param test_obj: The object to be tested
+        :param test_obj: Required. The object to be tested
         :type test_obj: object
         :return: True if pickleable, False if not
         :rtype: bool

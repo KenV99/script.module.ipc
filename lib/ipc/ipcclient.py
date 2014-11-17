@@ -25,7 +25,7 @@ import pyro4
 import pyro4.util
 
 if 'win' in sys.platform:
-    isKodi = 'XBMC' in sys.executable
+    isKodi = 'xbmc' in sys.executable.lower() or 'kodi' in sys.executable.lower()
 else:
     isKodi = True
 if isKodi:
@@ -38,21 +38,24 @@ class IPCClient(object):
     should be invoked just before running a server based method and then destroyed promptly to prevent running out
     of data sockets on the server and preventing dropped connections. This can be done by dropping out of context
     and need not be done explicitly. See pyro4 docs at https://pythonhosted.org/Pyro4/index.html for details.
-    :param add_on_id: The id of an addon which has stored server settings in its settings.xml file.
-                      This supercedes any explicit eyword assignments for name, host and port.
-    :type add_on_id: str
-    :param name: Arbitrary name for the object being used, must match the name used by server
-    :type name: str
-    :param host: The resolvable name or IP address where the server is running
-    :type host: str
-    :param port: Port matching server port
-    :type port: int
-    :param datatype: Type of data transport being used options: pickle, serpent, json, marshall. Must match server
-    :type datatype: str
 
     """
 
     def __init__(self, add_on_id='', name='kodi-IPC', host='localhost', port=9099, datatype='pickle'):
+        """
+        :param add_on_id: *Optional keyword*. The id of an addon which has stored server settings in its settings.xml file.
+                          This supercedes any explicit eyword assignments for name, host and port.
+        :type add_on_id: str
+        :param name: *Optional keyword*. Arbitrary name for the object being used, must match the name used by server
+        :type name: str
+        :param host: *Optional keyword*. The resolvable name or IP address where the server is running
+        :type host: str
+        :param port: *Optional keyword*. Port matching server port
+        :type port: int
+        :param datatype: *Optional keyword*. Type of data transport being used options: pickle, serpent, json, marshall. Must match server
+        :type datatype: str
+
+        """
         if add_on_id != '' and isKodi:
             try:
                 settings = xbmcaddon.Addon(add_on_id).getSetting
