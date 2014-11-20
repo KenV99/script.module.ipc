@@ -25,6 +25,7 @@ import pyro4.util
 import pyro4.errors
 import threading
 import sys
+import time
 
 
 def printlog(msg):
@@ -39,6 +40,7 @@ if isKodi:
     import xbmcaddon
     logger = xbmc.log
 else:
+    import time
     logger = printlog
 
 
@@ -56,8 +58,8 @@ class IPCServer(threading.Thread):
         """
         :param expose_obj: *Required*. This is the python object whose methods will be exposed to the clients
         :type expose_obj: object or classic class
-        :param add_on_id: *Optional keyword*. The id of an addon which has stored server settings in its settings.xml file.
-                          This supercedes any explicit keyword assignments for name, host and port.
+        :param add_on_id: *Optional keyword*. The id of an addon which has stored server settings in its settings.xml
+                            file. This supercedes any explicit keyword assignments for name, host and port.
         :type add_on_id: str
         :param name: *Optional keyword*. The arbitrary name used by the socket protocol for this datastore.
         :type name: str
@@ -65,7 +67,8 @@ class IPCServer(threading.Thread):
         :type host: str
         :param port: *Optional keyword*. The port for the socket used.
         :type port: int
-        :param serializer: *Optional keyword*. The serialization protocol to be used. Options: pickle, serpent, marshall, json
+        :param serializer: *Optional keyword*. The serialization protocol to be used. Options: pickle, serpent,
+                            marshall, json
         :type serializer: str
 
         """
@@ -93,8 +96,9 @@ class IPCServer(threading.Thread):
     def run(self):
         """
         Note that you must call .start() on the class instance to start the server in a separate thread.
-        Do not call run() directly with IPCServer.run() or it will run in the same thread as the caller and lock when it
-        hits daemon.requestLoop().
+        Do not call run() directly with IPCServer.run() or it will run in the same thread as the caller and
+        lock when it hits daemon.requestLoop().
+
         """
         if (self.serializer in pyro4.config.SERIALIZERS_ACCEPTED) is False:
             pyro4.config.SERIALIZERS_ACCEPTED.add(self.serializer)
@@ -110,18 +114,41 @@ class IPCServer(threading.Thread):
             self.p4daemon = daemon
             self.running = True
             logger("'*&*&*&*& ipcdatastore: IPC Server Started: {0}".format(daemon.uriFor(self.name)))
-            daemon.requestLoop()
+            daemon.requestLoop(loopCondition=self.is_running)
+
+    def is_running(self):
+        """
+        Required to be able to stop the request loop and shutdown the server threads
+
+        """
+        return self.running
 
     def stop(self):
         """
-        Stops the server. Raises an exception on failure
+        Stops the server. Raises an exception on failure.
+        If the exposed object has a method called 'close', this is called before the server stops.
+        There are two 20msec delays to allow any pending data to propagate.
+
         """
-        try:
-            self.p4daemon.shutdown()
-        except Exception:
-            raise
-        else:
-            self.running = False
+        time.sleep(0.02)
+        if hasattr(self.expose_obj, 'close'):
+            self.expose_obj.close()
+        time.sleep(0.02)
+        self.running = False
+        if self.isAlive():
+            try:
+                self.p4daemon.shutdown()
+            except Exception:
+                raise
+            else:
+                i = 50
+                while i > 0 and self.isAlive() is True:
+                    if isKodi:
+                        xbmc.sleep(50)
+                    else:
+                        time.sleep(0.05)
+                    i -= 1
+                pass
 
     @staticmethod
     def test_pickle(test_obj):
