@@ -25,6 +25,7 @@ import pyro4.util
 import pyro4.errors
 import threading
 import sys
+import socket
 import time
 
 
@@ -40,8 +41,14 @@ if isKodi:
     import xbmcaddon
     logger = xbmc.log
 else:
-    import time
     logger = printlog
+
+
+def sleep(msecs):
+    if isKodi:
+        xbmc.sleep(msecs)
+    else:
+        time.sleep(msecs / 1000.0)
 
 
 class IPCServer(threading.Thread):
@@ -92,63 +99,69 @@ class IPCServer(threading.Thread):
         self.expose_obj = expose_obj
         self.p4daemon = None
         self.running = False
+        self.shutdown = False
+        self.exception = None
 
     def run(self):
         """
         Note that you must call .start() on the class instance to start the server in a separate thread.
         Do not call run() directly with IPCServer.run() or it will run in the same thread as the caller and
-        lock when it hits daemon.requestLoop().
+        lock when it hits daemon.requestLoop(). If port unavailable, retries 5 times with a 10ms delay between tries.
 
         """
         if (self.serializer in pyro4.config.SERIALIZERS_ACCEPTED) is False:
             pyro4.config.SERIALIZERS_ACCEPTED.add(self.serializer)
         pyro4.config.SERIALIZER = self.serializer
-        try:
-            daemon = pyro4.Daemon(host=self.host, port=self.port)
-            daemon.register(self.expose_obj, self.name)
-        except Exception as e:
-            logger("'*&*&*&*& ipcdatastore: Error starting IPC Server")
-            if hasattr(e, 'message'):
-                logger(e.message)
-        else:
-            self.p4daemon = daemon
-            self.running = True
-            logger("'*&*&*&*& ipcdatastore: IPC Server Started: {0}".format(daemon.uriFor(self.name)))
-            daemon.requestLoop(loopCondition=self.is_running)
-
-    def is_running(self):
-        """
-        Required to be able to stop the request loop and shutdown the server threads
-
-        """
-        return self.running
+        retry = 5
+        while retry > 0:
+            try:
+                self.p4daemon = pyro4.Daemon(host=self.host, port=self.port)
+                self.p4daemon.register(self.expose_obj, self.name)
+            except socket.error as e:
+                if e.errno == 10048:  # Only one usage of each socket address
+                    if retry > 1:
+                        retry -= 1
+                        sleep(10)
+                    else:
+                        logger("'*&*&*&*& ipcdatastore: Error starting IPC Server: {0}. Socket already in use."
+                               .format(self.uri))
+                        e.message = "Socket {0} already in use.".format(self.port)
+                        self.exception = e
+                        retry = 0
+            except Exception as e:
+                logger("'*&*&*&*& ipcdatastore: Error starting IPC Server: {0}".format(self.uri))
+                if hasattr(e, 'message'):
+                    if len(e.message) > 0:
+                        logger(e.message)
+                if hasattr(e, 'args'):
+                    if len(e.args) > 1:
+                        logger(str(e.args[1]))
+                self.exception = e
+                retry = 0
+            else:
+                self.running = True
+                logger("'*&*&*&*& ipcdatastore: IPC Server Started: {0}".format(self.uri))
+                self.p4daemon.requestLoop()
+                logger("*&*&*&*& ipcdatastore: IPC Server Exited Event Loop: {0}".format(self.uri))
+                retry = 0
 
     def stop(self):
         """
-        Stops the server. Raises an exception on failure.
-        If the exposed object has a method called 'close', this is called before the server stops.
-        There are two 20msec delays to allow any pending data to propagate.
+        Stops the server. If the exposed object has a method called 'close', this is called before the server stops.
+        There is a 50msec delays to allow any pending data to propagate.
 
         """
-        time.sleep(0.02)
+        sleep(50)
         if hasattr(self.expose_obj, 'close'):
             self.expose_obj.close()
-        time.sleep(0.02)
         self.running = False
-        if self.isAlive():
-            try:
-                self.p4daemon.shutdown()
-            except Exception:
-                raise
-            else:
-                i = 50
-                while i > 0 and self.isAlive() is True:
-                    if isKodi:
-                        xbmc.sleep(50)
-                    else:
-                        time.sleep(0.05)
-                    i -= 1
-                pass
+        if self.is_alive():
+            self.p4daemon.shutdown()
+            self.join(2)
+        self.p4daemon = None
+        if self.is_alive():
+            logger("*&*&*&*& ipcdatastore: IPC Server Failed to Shutdown: {0}".format(self.uri))
+        self.shutdown = True
 
     @staticmethod
     def test_pickle(test_obj):
@@ -169,3 +182,16 @@ class IPCServer(threading.Thread):
             return False
         else:
             return True
+
+    def start(self):
+        """
+        Overrides base start() and then calls it via super. Main purpose is to provide a way to monitor for exceptions
+        during startup from the inside loop that otherwise could not be easily raised and caught.
+
+        """
+        super(IPCServer, self).start()
+        while True:
+            if self.running is True or self.exception is not None:
+                break
+        if self.exception:
+            raise self.exception
