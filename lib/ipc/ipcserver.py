@@ -154,13 +154,15 @@ class IPCServer(threading.Thread):
         sleep(50)
         if hasattr(self.expose_obj, 'close'):
             self.expose_obj.close()
-        self.running = False
         if self.is_alive():
             self.p4daemon.shutdown()
             self.join(2)
         self.p4daemon = None
         if self.is_alive():
             logger("*&*&*&*& ipcdatastore: IPC Server Failed to Shutdown: {0}".format(self.uri))
+        else:
+            logger("*&*&*&*& ipcdatastore: IPC Server Shutdown Successfully: {0}".format(self.uri))
+            self.running = False
         self.shutdown = True
 
     @staticmethod
